@@ -40,33 +40,9 @@
   }
 }
 
-/* GRN Table Row Colors */
-.approved-row {
-  background-color: #f0f9ff !important; /* Light blue for approved */
-}
-
-.approved-row:hover {
-  background-color: #e0f2fe !important;
-}
-
-.pending-row {
-  background-color: #fef3c7 !important; /* Light yellow for pending */
-}
-
-.pending-row:hover {
-  background-color: #fde68a !important;
-}
-
-.cancelled-row {
-  background-color: #fef2f2 !important; /* Light red for cancelled */
-}
-
-.cancelled-row:hover {
-  background-color: #fecaca !important;
-}
-
 :root {
   --theme-primary-color: #102257;
   --theme-background-color: #f5f5f5;
-  --theme-form-bg-color:#b5b9d26b;
+  --card-header-color:#536882;
 }
+

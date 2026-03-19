@@ -1,75 +1,65 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { User, PermissionUtils } from '../permissions/permissionUtils';
-import { Role } from '../permissions/roles';
+import React, { createContext, useContext, ReactNode } from 'react';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  permissions: string[];
+}
 
 interface AuthContextType {
-  isAuthenticated: boolean;
   user: User | null;
-  login: (username: string, password: string) => boolean;
+  login: (user: User) => void;
   logout: () => void;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ADMIN_CREDENTIALS = [
-  { username: 'superadmin', password: 'super123', role: Role.SUPER_ADMIN },
-  { username: 'admin', password: 'admin123', role: Role.ADMIN },
-  { username: 'manager', password: 'manager123', role: Role.MANAGER },
-  { username: 'user', password: 'user123', role: Role.USER },
-  { username: 'viewer', password: 'viewer123', role: Role.VIEWER }
-];
+// Demo user with dashboard permission for development
+const demoUser: User = {
+  id: 'demo-user',
+  name: 'Demo User',
+  email: 'demo@example.com',
+  role: 'Super Admin',
+  permissions: [
+    "dashboard",
+    "patients",
+    "order-history",
+    "products"
+  ]
+};
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [user, setUser] = useState<User | null>(() => {
-    const storedAuth = localStorage.getItem('isAuthenticated');
-    const storedUser = localStorage.getItem('user');
-    if (storedAuth === 'true' && storedUser) {
-      return JSON.parse(storedUser);
-    }
-    return null;
-  });
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // For demo purposes, auto-login with demo user
+  // In production, this would handle actual authentication
+  const [user, setUser] = React.useState<User | null>(demoUser);
 
-  const login = (username: string, password: string): boolean => {
-    const credentials = ADMIN_CREDENTIALS.find(
-      cred => cred.username === username && cred.password === password
-    );
-    
-    if (credentials) {
-      const loggedInUser = PermissionUtils.createUserWithRole(
-        '1',
-        credentials.username,
-        `${credentials.username}@example.com`,
-        credentials.role
-      );
-      
-      setIsAuthenticated(true);
-      setUser(loggedInUser);
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify(loggedInUser));
-      return true;
-    }
-    return false;
+  const login = (userData: User) => {
+    setUser(userData);
+    // TODO: Store in localStorage/sessionStorage for persistence
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
     setUser(null);
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
+    // TODO: Clear localStorage/sessionStorage
   };
 
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+  const value: AuthContextType = {
+    user,
+    login,
+    logout,
+    isAuthenticated: !!user,
+  };
 
-export function useAuth() {
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
+};

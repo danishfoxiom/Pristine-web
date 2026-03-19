@@ -1,152 +1,85 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { ToastProvider } from './context/ToastContext';
-import { ThemeProvider } from './context/ThemeContext';
-import { LoadingProvider } from './context/LoadingContext';
-import { message } from 'antd';
-import DashboardLayout from './layout/DashboardLayout';
-import DashboardHome from './pages/dashboard/DashboardHome';
-import UsersPage from './pages/users';
-import NotFound from './pages/notFound/NotFound';
-import CompanyManagement from './pages/CompanyManagement';
-import BranchManagement from './pages/BranchManagement';
-import DesignationManagement from './pages/DesignationManagement';
-import DepartmentManagement from './pages/departmentManagement';
-import RoleManagement from './pages/roleManagement';
-import PermissionManagement from './pages/permissionManagement';
-import ProtectedRoute from './components/ProtectedRoute';
-import AuthModal from './components/AuthModal';
-import LoginPage from './pages/login';
-import { Permission } from './permissions/permissions';
-import { useState, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter as Router, useRoutes } from "react-router-dom";
+import { useState } from "react";
+import { routes } from "./routes";
+import { ConfigProvider, App as AntdApp } from "antd";
+import theme from "./config/theme";
+import GlobalStyles from "./config/globalStyles";
+import Sidebar from "./components/Sidebar/Sidebar";
+import Header from "./components/header/Header";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { AuthProvider } from "./context/AuthContext";
 
-// Configure global message settings
-message.config({
-  top: 20,
-  duration: 3,
-  maxCount: 3,
-  rtl: false,
-});
+function AppRoutes() {
+  const element = useRoutes(routes);
+  return element;
+}
 
-// Example pages for demonstration
-const UnauthorizedPage = () => <div className="flex items-center justify-center min-h-screen text-white">Unauthorized Access</div>;
+function MainLayout() {
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
-function AppContent() {
-  const { isAuthenticated } = useAuth();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-
-  useEffect(() => {
-    setIsAuthModalOpen(!isAuthenticated);
-  }, [isAuthenticated]);
+  const toggleMobileSidebar = () => {
+    setShowMobileSidebar(!showMobileSidebar);
+  };
 
   return (
-    <>
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
-      />
-      <Routes>
-      {/* Public routes */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/unauthorized" element={<UnauthorizedPage />} />
-      
-      {/* Protected routes */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute requiredPermissions={[Permission.VIEW_DASHBOARD]}>
-            <DashboardLayout />
-          </ProtectedRoute>
-        }
+    <div className="flex h-screen bg-background">
+      {/* Mobile sidebar backdrop */}
+      {showMobileSidebar && (
+        <div
+          className="fixed inset-0 bg-gray-900 bg-opacity-50 z-20 lg:hidden"
+          onClick={toggleMobileSidebar}
+        ></div>
+      )}
+
+      {/* Sidebar - hidden on mobile unless toggled */}
+      <div
+        className={`fixed inset-y-0 left-0 z-30 lg:relative lg:z-0 transform ${
+          showMobileSidebar ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0 transition-transform duration-300 ease-in-out`}
       >
-        <Route index element={<DashboardHome />} />
-        
-        {/* User management routes - require user management permissions */}
-        <Route 
-          path="users" 
-          element={
-            <ProtectedRoute requiredPermissions={[Permission.VIEW_USERS]}>
-              <UsersPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="company" 
-          element={
-            <ProtectedRoute requiredPermissions={[Permission.EDIT_SETTINGS]}>
-              <CompanyManagement />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="branch" 
-          element={
-            <ProtectedRoute requiredPermissions={[Permission.EDIT_SETTINGS]}>
-              <BranchManagement />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="department" 
-          element={
-            <ProtectedRoute requiredPermissions={[Permission.EDIT_SETTINGS]}>
-              <DepartmentManagement />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="designation" 
-          element={
-            <ProtectedRoute requiredPermissions={[Permission.EDIT_SETTINGS]}>
-              <DesignationManagement />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="role" 
-          element={
-            <ProtectedRoute requiredPermissions={[Permission.VIEW_ROLES]}>
-              <RoleManagement />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route 
-          path="permission" 
-          element={
-            <ProtectedRoute requiredPermissions={[Permission.VIEW_PERMISSIONS]}>
-              <PermissionManagement />
-            </ProtectedRoute>
-          } 
-        />
-        
-        <Route path="*" element={<NotFound />} />
-      </Route>
-      
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
-    </>
+        <Sidebar />
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col overflow-hidden p-[10px] py-[1.5rem] rounded-lg">
+        <Header user={null} onMenuClick={toggleMobileSidebar} />
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto">
+            <main>
+              <AppRoutes />
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
 function App() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
+
   return (
-    <LoadingProvider>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider>
-          <ToastProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </ToastProvider>
-        </ThemeProvider>
+        <ConfigProvider theme={theme}>
+          <AntdApp>
+            <GlobalStyles />
+            <Router>
+              <MainLayout />
+            </Router>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </AntdApp>
+        </ConfigProvider>
       </AuthProvider>
-    </LoadingProvider>
+    </QueryClientProvider>
   );
 }
 
