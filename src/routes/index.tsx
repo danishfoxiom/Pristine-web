@@ -3,6 +3,8 @@ import Dashboard from "../app/dashbord/Dashboard";
 import Product from "../app/product/index";
 import Patient from "../app/patient";
 import PatientForm from "../app/patient/PatientForm";
+import OrderHistory from "../app/orderHistory";
+import NotFound from "../app/notFound";
 
 export const routes: RouteObject[] = [
   {
@@ -24,5 +26,13 @@ export const routes: RouteObject[] = [
   {
     path: "/product",
     element: <Product />,
+  },
+  {
+    path: "/order-history",
+    element: <OrderHistory />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ];

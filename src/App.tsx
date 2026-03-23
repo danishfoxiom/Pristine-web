@@ -12,7 +12,7 @@ import { AuthProvider } from "./context/AuthContext";
 
 function AppRoutes() {
   const element = useRoutes(routes);
-  return element;
+  return <>{element}</>;
 }
 
 function MainLayout() {
