@@ -206,7 +206,7 @@ const Sidebar = () => {
     >
       {/* App Logo/Title - Sticky */}
       <div className="px-8 py-3 border-b border-white/20 text-white sticky top-0 z-10">
-        <h1 className="text-xl font-bold">LMS</h1>
+        <h1 className="text-xl font-bold">Pristine</h1>
       </div>
 
       {/* Menu Items - Scrollable */}

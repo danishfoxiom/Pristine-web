@@ -2,6 +2,7 @@
 import {
   LayoutDashboard,
   Package,
+  Users,
   LucideIcon,
 } from "lucide-react";
 
@@ -43,11 +44,25 @@ const allNavigation: MenuItem[] = [
     resource: "dashboard",
   },
   {
+    id: "patient",
+    title: "Patient",
+    icon: Users,
+    path: "/patient",
+    resource: "patients",
+  },
+  {
     id: "product",
     title: "Product",
     icon: Package,
     path: "/product",
     resource: "products",
+  },
+  {
+    id: "order-history",
+    title: "Order History",
+    icon: Package,
+    path: "/order-history",
+    resource: "order-history",
   },
 ];
 
